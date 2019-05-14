@@ -12,6 +12,10 @@ services:
     expose:
       - 3306
 
+  tensorflow_test_model:
+    build: './tensorflow_test_model'
+    restart: always
+
   test_model:
     build: './test_model'
     restart: always
