@@ -1,5 +1,5 @@
 # Use root/example as user/password credentials
-version: '3.1'
+version: '2.3'
 
 services:
 
@@ -14,6 +14,7 @@ services:
 
   tensorflow_test_model:
     build: './tensorflow_test_model'
+    runtime: nvidia
     restart: always
 
   test_model:
