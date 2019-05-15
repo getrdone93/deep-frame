@@ -3,36 +3,36 @@ version: '2.3'
 
 services:
 
-  db:
-    build: './database'
-    command: --default-authentication-plugin=mysql_native_password --init-file=/home/db_create.sql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: dontHackMe
-    expose:
-      - 3306
+  # db:
+  #   build: './database'
+  #   command: --default-authentication-plugin=mysql_native_password --init-file=/home/db_create.sql
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: dontHackMe
+  #   expose:
+  #     - 3306
 
   tensorflow_test_model:
     build: './tensorflow_test_model'
     runtime: nvidia
     restart: always
 
-  test_model:
-    build: './test_model'
-    restart: always
-    environment:
-      DB_HOST: "db"
-      DB_PORT: 3306
-      DB_USER: "root"
-      DB_PASS: "dontHackMe"
-      DB_DATABASE: "test"
-    depends_on:
-      - db
+  # test_model:
+  #   build: './test_model'
+  #   restart: always
+  #   environment:
+  #     DB_HOST: "db"
+  #     DB_PORT: 3306
+  #     DB_USER: "root"
+  #     DB_PASS: "dontHackMe"
+  #     DB_DATABASE: "test"
+  #   depends_on:
+  #     - db
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-    depends_on:
-      - db
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+  #   depends_on:
+  #     - db
