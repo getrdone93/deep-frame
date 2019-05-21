@@ -26,8 +26,17 @@ RUN pip install Cython contextlib2 jupyter matplotlib tensorflow-gpu==1.13.1
 
 #probably do git clone in future
 COPY ${MODELS} /${MODELS}
+COPY cocoapi /cocoapi
+
+RUN cd /cocoapi/PythonAPI \
+       && make \
+       && cp -r pycocotools /${MODELS}/research
 
 RUN cd /${MODELS}/research \
         && protoc object_detection/protos/*.proto --python_out=.
 
-CMD ["python", "/models/research/object_detection/builders/model_builder_test.py"]
+COPY test_container.py /test_container.py
+
+ENTRYPOINT ["python", "/test_container.py"]
+#CMD ["python", "/models/research/object_detection/builders/model_builder_test.py"]
+#ENTRYPOINT ["python", "/models/research/object_detection/model_main.py"]

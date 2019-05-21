@@ -16,6 +16,9 @@ services:
     build: './tensorflow_test_model'
     runtime: nvidia
     restart: always
+    command: -model_dir /train_test/model -pipeline_config_path /models/research/object_detection/samples/configs/ssd_mobilenet_v1_coco.config
+    volumes: 
+      - /home/tanderson/graduateWork/project/data:/data
 
   # test_model:
   #   build: './test_model'
