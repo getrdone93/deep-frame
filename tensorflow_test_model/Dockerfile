@@ -1,7 +1,5 @@
 # Docker image for running examples in Tensorflow models.
 # base_image depends on whether we are running on GPUs or non-GPUs
-
-#original dockerfile: ~/graduateWork/project/models/official/Dockerfile.gpu
 FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
 
 ENV DEBIAN_FRONTEND=noninteractive 
@@ -20,9 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     protobuf-compiler \
     python-pil \
     python-lxml \
-    python-tk
+    python-tk \
+    unzip
     
-RUN pip install Cython contextlib2 jupyter matplotlib tensorflow-gpu==1.13.1
+RUN pip install Keras Cython contextlib2 jupyter matplotlib tensorflow-gpu==1.13.1
 
 #probably do git clone in future
 COPY ${MODELS} /${MODELS}
@@ -37,6 +36,6 @@ RUN cd /${MODELS}/research \
 
 COPY test_container.py /test_container.py
 
-ENTRYPOINT ["python", "/test_container.py"]
-#CMD ["python", "/models/research/object_detection/builders/model_builder_test.py"]
-#ENTRYPOINT ["python", "/models/research/object_detection/model_main.py"]
+#CMD ["python", "/test_container.py"]
+WORKDIR /models/research
+ENTRYPOINT [""]

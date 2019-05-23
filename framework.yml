@@ -12,16 +12,25 @@ services:
   #   expose:
   #     - 3306
 
+  #Get and generate data
+  # tensorflow_test_model:
+  #   build: './tensorflow_test_model'
+  #   runtime: nvidia
+  #   restart: always
+  #   command: bash object_detection/dataset_tools/download_and_preprocess_mscoco.sh /data
+  #   volumes: 
+  #     - /home/tanderson/graduateWork/project/data:/data
+
   tensorflow_test_model:
     build: './tensorflow_test_model'
     runtime: nvidia
     restart: always
-    command: -model_dir /train_test/model -pipeline_config_path /models/research/object_detection/samples/configs/ssd_mobilenet_v1_coco.config
+    command: python object_detection/model_main.py -model_dir /data/model_cp -pipeline_config_path object_detection/samples/configs/ssd_mobilenet_v1_coco.config
     volumes: 
-      - /home/tanderson/graduateWork/project/data:/data
+      - /home/tanderson/graduateWork/project/framework/data:/data
 
-  # test_model:
-  #   build: './test_model'
+  # test_db_writer:
+  #   build: './test_db_writer'
   #   restart: always
   #   environment:
   #     DB_HOST: "db"
