@@ -1,10 +1,10 @@
 # Use root/example as user/password credentials
-version: '2.3'
+version: "2.3"
 
 services:
 
   # db:
-  #   build: './database'
+  #   build: "./database"
   #   command: --default-authentication-plugin=mysql_native_password --init-file=/home/db_create.sql
   #   restart: always
   #   environment:
@@ -14,23 +14,23 @@ services:
 
   #Get and generate data
   # tensorflow_test_model:
-  #   build: './tensorflow_test_model'
+  #   build: "./tensorflow_test_model"
   #   runtime: nvidia
   #   restart: always
   #   command: bash object_detection/dataset_tools/download_and_preprocess_mscoco.sh /data
   #   volumes: 
   #     - /home/tanderson/graduateWork/project/data:/data
 
-  tensorflow_test_model:
-    build: './tensorflow_test_model'
+  ssd_mobilenet_v1_coco:
+    build: "./tensorflow_test_model"
     runtime: nvidia
-    restart: always
-    command: python object_detection/model_main.py -model_dir /data/model_cp -pipeline_config_path object_detection/samples/configs/ssd_mobilenet_v1_coco.config
+    restart: "no"
+    command: python object_detection/model_main.py -model_dir /data/model_cp/ssd_mobilenet_v1_coco/model -pipeline_config_path object_detection/samples/configs/ssd_mobilenet_v1_coco.config -num_train_steps 200 -checkpoint_dir /data/model_cp/ssd_mobilenet_v1_coco/model
     volumes: 
       - /home/tanderson/graduateWork/project/framework/data:/data
 
   # test_db_writer:
-  #   build: './test_db_writer'
+  #   build: "./test_db_writer"
   #   restart: always
   #   environment:
   #     DB_HOST: "db"
