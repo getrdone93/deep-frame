@@ -1,6 +1,7 @@
 import tensorflow as tf
+import pprint
 
-def read_event_file(file_name=None, types=(float, bytes)):
+def read_event_file(pp, file_name=None, types=(float, bytes)):
     if file_name is None:
         print("file_name was none, doing nothing")
     else:
@@ -15,10 +16,10 @@ def read_event_file(file_name=None, types=(float, bytes)):
                 except AttributeError:
                     print("ERROR: could not get %s from: %s" % ("simple_value", v.tag))
 
-            out['tag_val'] = tag_val
-
-            print(out)
+            print('out: ', out)
+            pp.pprint(tag_val)            
             print
 
 if __name__ == '__main__':
-    read_event_file("/home/tanderson/graduateWork/project/framework/data/model_cp/ssd_mobilenet_v1_coco/model/eval_0/events.out.tfevents.1558898299.6acf4ea16b37")
+    pp = pprint.PrettyPrinter(indent=4)
+    read_event_file(pp, "/home/tanderson/graduateWork/project/framework/data/model_cp/ssd_mobilenet_v1_coco/model/eval_0/events.out.tfevents.1558898299.6acf4ea16b37")
