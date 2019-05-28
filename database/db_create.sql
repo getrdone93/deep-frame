@@ -20,7 +20,8 @@ create table if not exists model (
 create table if not exists metrics (
        metric_id int unsigned not null auto_increment primary key,
        model_id_fk int unsigned not null,
-       foreign key (model_id_fk) references model(model_id));      
+       foreign key (model_id_fk) references model(model_id)
+       loss double not null);      
 
 
        -- detectionboxes_precision_map double not null,

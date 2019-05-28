@@ -12,6 +12,18 @@ services:
     expose:
       - 3306
 
+  test_db_writer:
+    build: "./test_db_writer"
+    restart: always
+    environment:
+      DB_HOST: "db"
+      DB_PORT: 3306
+      DB_USER: "root"
+      DB_PASS: "dontHackMe"
+      DB_DATABASE: "test"
+    depends_on:
+      - db
+
   #Get and generate data
   # tensorflow_test_model:
   #   build: "./tensorflow_test_model"
@@ -29,18 +41,6 @@ services:
   #   volumes: 
   #     - /home/tanderson/graduateWork/project/framework/data:/data
 
-  # test_db_writer:
-  #   build: "./test_db_writer"
-  #   restart: always
-  #   environment:
-  #     DB_HOST: "db"
-  #     DB_PORT: 3306
-  #     DB_USER: "root"
-  #     DB_PASS: "dontHackMe"
-  #     DB_DATABASE: "test"
-  #   depends_on:
-  #     - db
-
   # adminer:
   #   image: adminer
   #   restart: always
@@ -48,3 +48,6 @@ services:
   #     - 8080:8080
   #   depends_on:
   #     - db
+
+
+#"/home/tanderson/graduateWork/project/framework/data/model_cp/ssd_mobilenet_v1_coco/model/eval_0/events.out.tfevents.1558898299.6acf4ea16b37"
