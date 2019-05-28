@@ -3,7 +3,7 @@ import os
 import traceback
 import tensorflow as tf 
 
-QUERY = 'insert into model (meta_architecture_id_fk, backbone_id_fk, learning_rate) values (%s)'
+INSERT_QUERY = 'insert into model (meta_architecture_id_fk, backbone_id_fk, learning_rate) values (%s, %s, %s)'
 
 class Database():
 
@@ -12,32 +12,10 @@ class Database():
         self.port = port
         self.user = user
         self.password = password
-        self.database = database    
-    
-    # def open_connection(self):
-    #     conn = None
-    #     try:
-    #         conn = msc.connect(host=self.host,
-    #                            port=int(self.port),
-    #                            user=self.user,
-    #                            passwd=self.password,
-    #                            db=self.database)
-    #         cursor = conn.cursor()
-    #         insert = "insert into deep_learning (name) values (%s)" 
-    #         for i in range(5):
-    #             values = ("Approach: " + str(i),)            
-    #             cursor.execute(insert, values)
-    #             conn.commit()
-    #             print("Inserted value " + values[0])
-    #     except BaseException as e:
-    #         traceback.print_exc()
-    #         if conn is not None:
-    #             conn.rollback()
-    #     finally:
-    #         if conn is not None:
-    #             conn.close()
+        self.database = database   
+        self.connection = None    
 
-    def insert(self, query, values):
+    def execute(self, query, values):
         try:
             vals = tuple(values)
             cursor = self.connection.cursor()
@@ -46,7 +24,6 @@ class Database():
         except BaseException as e:
             traceback.print_exc()
             
-
     def open_connection(self):
         if self.connection is None:
             conn = None
@@ -63,7 +40,6 @@ class Database():
         else:
             tf.logging.info('no effect, connection is already open')
 
-
     def close_connection(self):
         if self.connection is None:
             tf.logging.info('no effect, connection is already closed')
@@ -73,7 +49,4 @@ class Database():
             except BaseException:
                 traceback.print_exc()
             finally:
-                tf.logging.info('connection has been closed')
-                    
-# if __name__ == '__main__':
-#     connect()
+                tf.logging.info('connection has been closed')                    
