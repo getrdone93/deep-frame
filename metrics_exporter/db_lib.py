@@ -7,7 +7,8 @@ INSERT_QUERY = 'insert into model (meta_architecture_id_fk, backbone_id_fk, lear
 
 class Database():
 
-    def __init__(self, host=os.environ['DB_HOST'], port=int(os.environ['DB_PORT']), user=os.environ['DB_USER'], password=os.environ['DB_PASS'], database=os.environ['DB_DATABASE']):
+    def __init__(self, host=os.environ['DB_HOST'], port=int(os.environ['DB_PORT']), user=os.environ['DB_USER'],\
+                 password=os.environ['DB_PASS'], database=os.environ['DB_DATABASE']):
         self.host = host
         self.port = port
         self.user = user

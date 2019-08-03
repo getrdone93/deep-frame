@@ -3,37 +3,46 @@ version: "2.3"
 
 services:
 
-  db:
-    build: "./database"
-    command: --default-authentication-plugin=mysql_native_password --init-file=/home/db_create.sql
+  # db:
+  #   build: "./database"
+  #   command: --default-authentication-plugin=mysql_native_password --init-file=/home/db_create.sql
+  #   restart: "no"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: pass
+  #   expose:
+  #     - 3306
+
+  # metrics_exporter:
+  #   build: "./metrics_exporter"
+  #   restart: always
+  #   command: -event_file_path /data/model_cp/ssd_mobilenet_v1_coco/model/eval/events.out.tfevents.1558898568.6acf4ea16b37
+  #   environment:
+  #     DB_HOST: "db"
+  #     DB_PORT: 3306
+  #     DB_USER: "root"
+  #     DB_PASS: "pass"
+  #     DB_DATABASE: "prod"
+  #   depends_on:
+  #     - db
+  #   volumes: 
+  #     - /home/tanderson/graduateWork/project/framework/data:/data
+
+  ssd_mobilenet_v1_coco:
+    build: "./tensorflow_test_model"
+    runtime: nvidia
     restart: "no"
-    environment:
-      MYSQL_ROOT_PASSWORD: pass
-    expose:
-      - 3306
-
-  metrics_exporter:
-    build: "./metrics_exporter"
-    restart: always
-    command: -event_file_path /data/model_cp/ssd_mobilenet_v1_coco/model/eval/events.out.tfevents.1558898568.6acf4ea16b37
-    environment:
-      DB_HOST: "db"
-      DB_PORT: 3306
-      DB_USER: "root"
-      DB_PASS: "pass"
-      DB_DATABASE: "prod"
-    depends_on:
-      - db
+    command: python object_detection/model_main.py -model_dir /data/model_execs/ssd_mobilenet_v1_coco/model -pipeline_config_path /config/ssd_mobilenet_v1_coco.config -num_train_steps 1000
     volumes: 
-      - /home/tanderson/graduateWork/project/framework/data:/data
+      - /home/tanderson:/data
+      - /home/tanderson/git/deep-frame/tensorflow_test_model/models/research/object_detection/samples/configs:/config
 
-  # ssd_mobilenet_v1_coco:
+  # download_preprocess_mscoco:
   #   build: "./tensorflow_test_model"
   #   runtime: nvidia
   #   restart: "no"
-  #   command: python object_detection/model_main.py -model_dir /data/model_cp/ssd_mobilenet_v1_coco/model -pipeline_config_path object_detection/samples/configs/ssd_mobilenet_v1_coco.config -num_train_steps 200 -checkpoint_dir /data/model_cp/ssd_mobilenet_v1_coco/model
+  #   command: bash object_detection/dataset_tools/download_and_preprocess_mscoco.sh /data
   #   volumes: 
-  #     - /home/tanderson/graduateWork/project/framework/data:/data
+  #     - /home/tanderson/datasets/mscoco:/data
 
   # adminer:
   #   image: adminer
