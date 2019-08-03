@@ -31,7 +31,7 @@ services:
     build: "./tensorflow_test_model"
     runtime: nvidia
     restart: "no"
-    command: python object_detection/model_main.py -model_dir /data/model_execs/ssd_mobilenet_v1_coco -pipeline_config_path /configs/ssd_mobilenet_v1_coco.config -num_train_steps 1000
+    command: python object_detection/model_main.py -model_dir /model_execs/ssd_mobilenet_v1_coco -pipeline_config_path /configs/ssd_mobilenet_v1_coco.config -num_train_steps 1000
     volumes: 
       - /home/tanderson/datasets/mscoco:/data
       - /home/tanderson/model_execs:/model_execs
