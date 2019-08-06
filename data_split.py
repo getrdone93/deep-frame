@@ -12,14 +12,14 @@ def read_file(**kwargs):
 def images_by_category(**kwargs):
     d, ak, cid, img_id, i_d, img_mk, imgs = kwargs['data'], kwargs['anno_key'],\
                                       kwargs['category_id'], kwargs['image_id'],\
-                                      kwargs['i_d'], kwargs['image_map_key'], kwargs['images_lis']
+                                      kwargs['i_d'], kwargs['image_map_key'], kwargs['images']
 
     cat_img = {}
     for e in d[ak]:
         if e[cid] not in cat_img:
             cat_img[e[cid]] = []
         cat_img[e[cid]].append({i_d: e[i_d], img_id: e[img_id], 
-                                img_mk: filter(lambda i: i[i_d] == e[img_id], imgs)[0]})
+                                img_mk: imgs[e[img_id]]})
         
     return cat_img
 
@@ -32,7 +32,7 @@ def name_categories(**kwargs):
     i_d, nk, cats, im_bc = kwargs['id_key'], kwargs['name_key'], kwargs['category_data'],\
                            kwargs['images_by_category']
 
-    return {filter(lambda c: c[i_d] == k, cats)[0][nk]: im_bc[k] for k in im_bc.keys()}
+    return {cats[k][nk]: im_bc[k] for k in im_bc.keys()}
 
 def print_data(**kwargs):
     d = kwargs['data_map']
@@ -42,16 +42,20 @@ def print_data(**kwargs):
 
 def category_file_names(**kwargs):
     cs, imgs_bc, fnk, imk = kwargs['categories'], kwargs['images_by_category'], kwargs['file_name_key'],\
-                       kwargs['image_map_key']
+                            kwargs['image_map_key']
 
     return {k: map(lambda e: e[imk][fnk], imgs_bc[k]) for k in cs}
-    #return {k: map(lambda e: e, imgs_bc[k]) for k in cs}
 
 def percentages(**kwargs):
     cs = kwargs['category_counts']
 
     total = float(sum(map(lambda v: len(v), cs.values())))
     return {k: (cs[k], len(cs[k]), round(len(cs[k]) / total, 5)) for k in cs.keys()}, total
+
+def map_from_coll(**kwargs):
+    c, k = kwargs['collection'], kwargs['key']
+
+    return {e[k]: {ek: e[ek] for ek in set(e.keys()).difference({k})} for e in c}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Split a dataset')
@@ -62,14 +66,15 @@ if __name__ == '__main__':
     cat_key, ak, cat_id, im_id, i_d, nk, images, im, fn = 'categories', 'annotations', 'category_id',\
                                                   'image_id', 'id', 'name', 'images', 'image_map',\
                                                   'file_name'
-
-    print('reading in data')
     data = read_file(data_file=args.instance_files[0])
     print('data keys: ' + str(data.keys()))
 
+    data_maps = {kc[0]: map_from_coll(collection=kc[1], key=i_d) for kc in 
+     ((cat_key, data[cat_key]), (images, data[images]), (ak, data[ak]))}
+    
     imgs_bc = images_by_category(data=data, anno_key=ak, category_id=cat_id, 
-                                 image_id=im_id, i_d=i_d, image_map_key=im, images_lis=data[images])
-    ncs = name_categories(id_key=i_d, name_key=nk, category_data=data[cat_key], 
+                                 image_id=im_id, i_d=i_d, image_map_key=im, images=data_maps[images])
+    ncs = name_categories(id_key=i_d, name_key=nk, category_data=data_maps[cat_key], 
                     images_by_category=imgs_bc)
     if args.percentages:
         perc, tot = percentages(category_counts=ncs)
