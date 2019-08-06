@@ -1,5 +1,8 @@
 import json
 import argparse
+import os.path as path
+import shutil
+import os
 
 # def dep_func(**kwargs):
 #     perc, tot = percentages(category_counts=ncs)
@@ -68,7 +71,7 @@ def images_for_file(**kwargs):
                                           kwargs['image_id'], kwargs['id'], kwargs['image_map']
 
     mappings = {}
-    for insf, t_dir in inst_m.iteritems():    
+    for insf, ds in inst_m.iteritems():    
         data = read_file(data_file=insf)
         data_maps = {kc[0]: map_from_coll(collection=kc[1], key=i_d) for kc in 
          ((cat_key, data[cat_key]), (images, data[images]), (ak, data[ak]))}
@@ -79,29 +82,42 @@ def images_for_file(**kwargs):
                         images_by_category=imgs_bc)
         fns = category_file_names(categories=args.category_names, images_by_category=ncs, 
                                   file_name_key=fn, image_map_key=im)
-        mappings[t_dir] = fns
+        mappings[ds] = fns
     
-    return mappings    
+    return mappings
+
+def write_files(**kwargs):
+    ms = kwargs['mappings']
+
+    for ft, cat_files in ms.iteritems():
+        print("copying files from %s to %s" % (str(ft[0]), str(ft[1])))
+        for c, fs in cat_files.iteritems():
+            fns = map(lambda f: (path.join(ft[0], f), path.join(ft[1], f)), fs)
+            for f in fns:
+                shutil.copyfile(f[0], f[1])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Split a dataset')
     parser.add_argument('--instance-files', nargs='+', required=True, help='Annotations files')
     parser.add_argument('--category-names', nargs='+', required=True, help='Categories')
     parser.add_argument('--percentages', required=False, action='store_true')
-    parser.add_argument('--directories', nargs='+', required=True, help='Paths of data dirs. Should correspond ' 
+    parser.add_argument('--target-dirs', nargs='+', required=True, help='Paths of target dirs. Should correspond ' 
+                        + 'one-to-one with instance-files')
+    parser.add_argument('--current-dirs', required=True, nargs='+', help='Paths of current dirs. Should correspond ' 
                         + 'one-to-one with instance-files')
     args = parser.parse_args()
-    if len(args.instance_files) != len(args.directories):
-        print('instance-files and directories must have same len as they map one-to-one')
+    d_len = set(map(lambda d: len(d), (args.current_dirs, args.target_dirs, args.instance_files)))
+    if len(d_len) != 1:
+        print('instance-files, target-dirs, and current-dirs must have same len as they map one-to-one-to-one')
         exit(0)
-    instances_dirs = {v: args.directories[i] for i, v in enumerate(args.instance_files)}
+    for d in args.target_dirs:
+        if not path.exists(d):
+            os.makedirs(d)
+    instances_dirs = {v: (args.current_dirs[i], args.target_dirs[i]) for i, v in enumerate(args.instance_files)}
     cat_key, ak, cat_id, im_id, i_d, nk, images, im, fn = 'categories', 'annotations', 'category_id',\
                                                   'image_id', 'id', 'name', 'images', 'image_map',\
                                                   'file_name'
     key_args = {cat_key: cat_key, ak: ak, im_id: im_id, i_d: i_d, im: im}
     ms = images_for_file(instance_map=instances_dirs, **key_args)
-    for f, fv in ms.iteritems():
-        print('file ' + f)
-        for k, v in fv.iteritems():
-            print((k, len(v), v))
+    write_files(mappings=ms)
     
