@@ -75,7 +75,6 @@ def images_for_file(**kwargs):
         data = read_file(data_file=insf)
         data_maps = {kc[0]: map_from_coll(collection=kc[1], key=i_d) for kc in 
          ((cat_key, data[cat_key]), (images, data[images]), (ak, data[ak]))}
-
         imgs_bc = images_by_category(data=data, anno_key=ak, category_id=cat_id, 
                                      image_id=im_id, i_d=i_d, images=data_maps[images])
         ncs = name_categories(id_key=i_d, name_key=nk, category_data=data_maps[cat_key], 
