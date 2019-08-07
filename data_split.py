@@ -64,7 +64,7 @@ def output_percentages(**kwargs):
     print('File: ' + str(fn))
     for e in val:
         print("key: %s\t(%d, %f)" % (e[0], e[1][1], e[1][2]))
-    print("Total: %d\n" % (tot))
+    print("Total (images can have many categories): %d\n" % (tot))
 
 def images_for_file(**kwargs):
     inst_m, cat_key, ak, im_id, i_d, cat_id, images, fn = kwargs['instance_map'], kwargs['categories'], kwargs['annotations'],\
