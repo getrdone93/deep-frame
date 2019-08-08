@@ -1,6 +1,7 @@
 import argparse
 import json
 import os.path as path
+import copy
 
 def read_file(**kwargs):
     fn = kwargs['file_name']
@@ -34,7 +35,16 @@ def compute_output(**kwargs):
     img_ids = set(map(lambda i: i[im_id], annos))
     imgs = filter(lambda i: i[i_d] in img_ids, data[im_key])
 
-    return {inf: data[inf], lic: data[lic], ak: annos, im_key: imgs, cs: data[cs]}
+    cname_newid = {ic[0]: ic[1] for ic in 
+                   zip(cn, range(1, len(cn) + 1))}
+    for a in annos:
+        a.update({cat_id: cname_newid[cat_entries[a[cat_id]][nk]]})
+    new_cs = copy.deepcopy(filter(lambda c: c[i_d] in cat_entries, data[cs]))
+    for c in new_cs:
+        c.update({i_d: cname_newid[cat_entries[c[i_d]][nk]]})
+
+    return {inf: data[inf], lic: data[lic], ak: annos, im_key: imgs, 
+            cs: sorted(new_cs, key=lambda e: e[i_d])}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Write out an annotation file')
