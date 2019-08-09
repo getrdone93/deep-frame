@@ -1,0 +1,11 @@
+# Use root/example as user/password credentials
+version: "2.3"
+
+services:
+    download_preprocess_mscoco:
+      build: "../services/tensorflow_test_model"
+      runtime: nvidia
+      restart: "no"
+      command: bash object_detection/dataset_tools/download_and_preprocess_mscoco.sh /data
+      volumes: 
+        - /home/tanderson/models/datasets/mscoco:/data
