@@ -118,5 +118,5 @@ if __name__ == '__main__':
     cat_key, ak, im_id, i_d, nk = 'categories', 'annotations', 'image_id', 'id', 'name'
     key_args = {cat_key: cat_key, ak: ak, im_id: im_id, i_d: i_d}
     ms = images_for_file(instance_map=instances_dirs, **key_args)
-    write_files(mappings=ms)
+    #write_files(mappings=ms)
     
