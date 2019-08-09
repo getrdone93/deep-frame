@@ -1,3 +1,3 @@
-tensorflow_test_model/models/
-tensorflow_test_model/cocoapi/
+services/tensorflow_test_model/models/
+services/tensorflow_test_model/cocoapi/
 logs
