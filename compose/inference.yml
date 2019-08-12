@@ -1,0 +1,13 @@
+# Use root/example as user/password credentials
+version: "2.3"
+
+services:
+  inference:
+    build: "../services/tensorflow_test_model"
+    runtime: nvidia
+    restart: "no"
+    command: python object_detection/inference/infer_detections.py --output_tfrecord_path=/out/test.record --inference_graph=/graph/frozen_inference_graph.pb --discard_image_pixels --input_tfrecord_paths=/data/small_dataset/val/coco_val.record-00000-of-00010
+    volumes: 
+      - /home/tanderson/models/datasets/mscoco:/data
+      - /home/tanderson/models/inference:/out
+      - /home/tanderson/models/pretrained/ssd_mobilenet_v1_coco_2018_01_28:/graph 
