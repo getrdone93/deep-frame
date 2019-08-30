@@ -66,10 +66,15 @@ def output_percentages(**kwargs):
         print("key: %s\t(%d, %f)" % (e[0], e[1][1], e[1][2]))
     print("Total (images can have many categories): %d\n" % (tot))
 
+def subset_of_image_keys(data_maps, remove_keys, im_key):
+    return reduce(lambda i1, i2 : i1.union(i2), 
+                            map(lambda f: set(data_maps[f][0][im_key].keys()), data_maps))\
+                            .difference(remove_keys)      
+
 def images_for_file(**kwargs):
-    inst_m, cat_key, ak, im_id, i_d, cat_id, images, fn = kwargs['instance_map'], kwargs['categories'], kwargs['annotations'],\
-                                          kwargs['image_id'], kwargs['id'], 'category_id', 'images',\
-                                          'file_name'
+    inst_m, cat_key, ak, im_id, i_d, cat_id, images, fn, cn = kwargs['instance_map'], kwargs['categories'],\
+                                          kwargs['annotations'],  kwargs['image_id'], kwargs['id'],\
+                                          'category_id', 'images', 'file_name', kwargs['category_names']
     mappings = {}
     for insf, ds in inst_m.iteritems():    
         data = read_file(data_file=insf)
@@ -80,11 +85,11 @@ def images_for_file(**kwargs):
         ncs = name_categories(id_key=i_d, name_key=nk, category_data=data_maps[cat_key], 
                         images_by_category=imgs_bc)
         output_percentages(name_categories=ncs, file_name=path.basename(insf), data_maps=data_maps, image_id=im_id)
-        fns = category_file_names(categories=args.category_names, images_by_category=ncs, 
+        fns = category_file_names(categories=cat_names, images_by_category=ncs, 
                                   file_name_key=fn, image_id=im_id, all_images=data_maps[images])
         mappings[ds] = fns
     
-    return mappings
+    return mappings        
 
 def write_files(**kwargs):
     ms = kwargs['mappings']
@@ -97,11 +102,40 @@ def write_files(**kwargs):
                 shutil.copyfile(f[0], f[1])
         print("Files in %s: %d" % (ft[1], len(glob.glob(path.join(ft[1], './*')))))
 
+def data_maps(**kwargs):
+    inst_m, cat_key, ak, i_d, images = kwargs['instance_map'], kwargs['categories'],\
+                                          kwargs['annotations'], kwargs['id'],\
+                                          'images'
+    maps = {}
+    for insf, ds in inst_m.iteritems():    
+        data = read_file(data_file=insf)
+        data_maps = {kc[0]: map_from_coll(collection=kc[1], key=i_d) for kc in 
+         ((cat_key, data[cat_key]), (images, data[images]), (ak, data[ak]))}
+        maps[insf] = (data_maps, data)
+    
+    return maps
+
+def train_val_split(data_maps, remove_keys, im_key, anno_key, cat_id, i_d, im_id, name_key, 
+                    cat_key):
+    image_keys = subset_of_image_keys(data_maps, remove_keys, im_key)
+    images = map(lambda fn: (fn, {ik: data_maps[fn][0][im_key][ik] for ik in image_keys\
+                             if ik in data_maps[fn][0][im_key]}), data_maps)
+    images_bc = map(lambda i: (i[0], images_by_category(data=data_maps[i[0]][1], 
+                                                 anno_key=anno_key, category_id=cat_id, 
+                                                 images=i[1], image_id=im_id, i_d=i_d)), images)
+    named_bc = map(lambda i: (i[0], name_categories(id_key=i_d, name_key=name_key, 
+                             category_data=data_maps[i[0]][0][cat_key], 
+                             images_by_category=i[1])), images_bc)
+    
+    for dat in named_bc:
+        output_percentages(name_categories=dat[1], file_name=path.basename(dat[0]), 
+                           data_maps=data_maps[dat[0]][0], image_id=im_id)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Split a dataset')
     parser.add_argument('--instance-files', nargs='+', required=True, help='Annotations files')
-    parser.add_argument('--category-names', nargs='+', required=True, help='Categories')
-    parser.add_argument('--percentages', required=False, action='store_true')
+    parser.add_argument('--category-names', nargs='+', required=False, help='Categories')
+    parser.add_argument('--remove-ids', required=False, action='store_true')
     parser.add_argument('--target-dirs', nargs='+', required=True, help='Paths of target dirs. Should correspond ' 
                         + 'one-to-one with instance-files')
     parser.add_argument('--current-dirs', required=True, nargs='+', help='Paths of current dirs. Should correspond ' 
@@ -117,6 +151,10 @@ if __name__ == '__main__':
     instances_dirs = {v: (args.current_dirs[i], args.target_dirs[i]) for i, v in enumerate(args.instance_files)}
     cat_key, ak, im_id, i_d, nk = 'categories', 'annotations', 'image_id', 'id', 'name'
     key_args = {cat_key: cat_key, ak: ak, im_id: im_id, i_d: i_d}
-    ms = images_for_file(instance_map=instances_dirs, **key_args)
+
+    data = data_maps(instance_map=instances_dirs, **key_args)
+    train_val_split(data_maps=data, remove_keys={}, im_key='images', anno_key=ak, cat_id='category_id', 
+                    i_d=i_d, im_id=im_id, cat_key=cat_key, name_key=nk)
+    #ms = images_for_file(instance_map=instances_dirs, category_names=args.category_names, **key_args)
     #write_files(mappings=ms)
     
