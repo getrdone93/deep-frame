@@ -13,17 +13,22 @@ def read_file(**kwargs):
 
     return data
 
+def read_generic_file(path):
+    with open(path, 'r') as df:
+        data = df.read()
+    return data
+
 def images_by_category(**kwargs):
-    d, ak, cid, img_id, i_d, imgs = kwargs['data'], kwargs['anno_key'],\
-                                      kwargs['category_id'], kwargs['image_id'],\
-                                      kwargs['i_d'], kwargs['images']
+    d, ak, cid, img_id, i_d, inc_ims = kwargs['data'], kwargs['anno_key'], kwargs['category_id'],\
+                              kwargs['image_id'],  kwargs['i_d'], kwargs['include_image_ids']
 
     cat_img = {}
     for e in d[ak]:
         if e[cid] not in cat_img:
             cat_img[e[cid]] = []
-        cat_img[e[cid]].append({i_d: e[i_d], img_id: e[img_id]})
-        
+        if e[img_id] in inc_ims:
+            cat_img[e[cid]].append({i_d: e[i_d], img_id: e[img_id]})
+
     return cat_img
 
 def sort_by_val(**kwargs):
@@ -56,7 +61,7 @@ def map_from_coll(**kwargs):
     return {e[k]: {ek: e[ek] for ek in set(e.keys()).difference({k})} for e in c}
 
 def output_percentages(**kwargs):
-    ncs, fn, dm, ims, im_id = kwargs['name_categories'], kwargs['file_name'], kwargs['data_maps'],\
+    ncs, fn, ims, im_id = kwargs['name_categories'], kwargs['file_name'],\
                           'images', kwargs['image_id']
 
     perc, tot = percentages(category_counts=ncs, count_key=im_id)
@@ -67,9 +72,9 @@ def output_percentages(**kwargs):
     print("Total (images can have many categories): %d\n" % (tot))
 
 def subset_of_image_keys(data_maps, remove_keys, im_key):
-    return reduce(lambda i1, i2 : i1.union(i2), 
-                            map(lambda f: set(data_maps[f][0][im_key].keys()), data_maps))\
-                            .difference(remove_keys)      
+    total = reduce(lambda i1, i2 : i1.union(i2), 
+                            map(lambda f: set(data_maps[f][0][im_key]), data_maps))
+    return total, total.difference(remove_keys)      
 
 def images_for_file(**kwargs):
     inst_m, cat_key, ak, im_id, i_d, cat_id, images, fn, cn = kwargs['instance_map'], kwargs['categories'],\
@@ -117,12 +122,13 @@ def data_maps(**kwargs):
 
 def train_val_split(data_maps, remove_keys, im_key, anno_key, cat_id, i_d, im_id, name_key, 
                     cat_key):
-    image_keys = subset_of_image_keys(data_maps, remove_keys, im_key)
+    image_keys = subset_of_image_keys(data_maps, remove_keys, im_key)[1]
     images = map(lambda fn: (fn, {ik: data_maps[fn][0][im_key][ik] for ik in image_keys\
                              if ik in data_maps[fn][0][im_key]}), data_maps)
     images_bc = map(lambda i: (i[0], images_by_category(data=data_maps[i[0]][1], 
                                                  anno_key=anno_key, category_id=cat_id, 
-                                                 images=i[1], image_id=im_id, i_d=i_d)), images)
+                                                 image_id=im_id, i_d=i_d, 
+                                                 include_image_ids=set(i[1].keys()))), images)
     named_bc = map(lambda i: (i[0], name_categories(id_key=i_d, name_key=name_key, 
                              category_data=data_maps[i[0]][0][cat_key], 
                              images_by_category=i[1])), images_bc)
@@ -131,11 +137,15 @@ def train_val_split(data_maps, remove_keys, im_key, anno_key, cat_id, i_d, im_id
         output_percentages(name_categories=dat[1], file_name=path.basename(dat[0]), 
                            data_maps=data_maps[dat[0]][0], image_id=im_id)
 
+def ids(path):
+    return set(map(lambda i: int(i), 
+                   filter(lambda n: n, read_generic_file(path=path).split('\n'))))
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Split a dataset')
     parser.add_argument('--instance-files', nargs='+', required=True, help='Annotations files')
     parser.add_argument('--category-names', nargs='+', required=False, help='Categories')
-    parser.add_argument('--remove-ids', required=False, action='store_true')
+    parser.add_argument('--remove-ids', required=False)
     parser.add_argument('--target-dirs', nargs='+', required=True, help='Paths of target dirs. Should correspond ' 
                         + 'one-to-one with instance-files')
     parser.add_argument('--current-dirs', required=True, nargs='+', help='Paths of current dirs. Should correspond ' 
@@ -153,8 +163,9 @@ if __name__ == '__main__':
     key_args = {cat_key: cat_key, ak: ak, im_id: im_id, i_d: i_d}
 
     data = data_maps(instance_map=instances_dirs, **key_args)
-    train_val_split(data_maps=data, remove_keys={}, im_key='images', anno_key=ak, cat_id='category_id', 
-                    i_d=i_d, im_id=im_id, cat_key=cat_key, name_key=nk)
+    vids = ids(path=args.remove_ids)
+    train_val_split(data_maps=data, remove_keys=vids, im_key='images', 
+                    anno_key=ak, cat_id='category_id', i_d=i_d, im_id=im_id, cat_key=cat_key, name_key=nk)
     #ms = images_for_file(instance_map=instances_dirs, category_names=args.category_names, **key_args)
     #write_files(mappings=ms)
     
