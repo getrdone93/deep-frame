@@ -19,6 +19,10 @@ def read_json_file(path):
 
     return data
 
+def write_json_file(path, data):
+    with open(path, 'w') as jfw:
+        json.dump(data, jfw)
+
 def map_from_coll(coll, key):
     return {e[key]: {ek: e[ek] for ek in set(e.keys()).difference({key})} for e in coll}
 
@@ -44,13 +48,22 @@ def split_data(data_maps, val_ids, images_key, anno_key, image_id_key):
 
     return (train_images, train_annos), (val_images, val_annos)
 
+def filter_data(data, image_ids, anno_ids, images_key, anno_key, id_key):
+    imgs_annos = map(lambda t: (t[0], filter(lambda v: v[id_key] in t[1], data[t[0]])), 
+        ((images_key, image_ids), (anno_key, anno_ids)))
+    new_data = {e[0]: e[1] for e in imgs_annos}
+
+    for k in set(data).difference({images_key, anno_key}):
+        new_data[k] = data[k]
+    return new_data
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Split a dataset')
     parser.add_argument('--instance-file', required=False)
     parser.add_argument('--image-dir', required=False)
     parser.add_argument('--validation-ids-path', required=False)
-    parser.add_argument('--target-train', nargs=2, required=False)
-    parser.add_argument('--target-validation', nargs=2, required=False)
+    parser.add_argument('--target-train', nargs=1, required=False)
+    parser.add_argument('--target-validation', nargs=1, required=False)
     args = parser.parse_args()
 
     ids = ids_from_path(path=args.validation_ids_path, read_func=read_file)
@@ -60,5 +73,9 @@ if __name__ == '__main__':
 
     train, val = split_data(data_maps=data_maps, val_ids=ids, images_key=IMAGES, anno_key=ANNOTATIONS, 
                image_id_key=IMAGE_ID)
+    filt_data = filter_data(data=data, image_ids=set(val[0]), anno_ids=set(val[1]), 
+                            images_key=IMAGES, anno_key=ANNOTATIONS, id_key=I_D)
+
+    write_json_file(path=args.target_validation[0], data=filt_data)
 
 
