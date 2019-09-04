@@ -1,3 +1,4 @@
 services/tensorflow_test_model/models/
 services/tensorflow_test_model/cocoapi/
 logs
+configs/*.pbtxt

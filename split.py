@@ -93,7 +93,6 @@ if __name__ == '__main__':
     filt_train_data = filter_data(data=data, image_ids=set(train[0]), anno_ids=set(train[1]), 
                             images_key=IMAGES, anno_key=ANNOTATIONS, id_key=I_D)
 
-
     print('copying validation')
     copy_images(images=val[0], src=args.image_dir, dest=args.target_validation[0], 
                 file_name_key=FILE_NAME)

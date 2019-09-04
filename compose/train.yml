@@ -6,8 +6,8 @@ services:
     build: "../services/tensorflow_test_model"
     runtime: nvidia
     restart: "no"
-    command: python object_detection/model_main.py -model_dir /runs/ssd_mobilenet_v1_coco_small_dataset -pipeline_config_path /configs/ssd_mobilenet_v1_coco.config
+    command: python object_detection/model_main.py -model_dir /runs/ssd_mobilenet_v2_minival2014_coco -pipeline_config_path /configs/ssd_mobilenet_v2_minival2014_coco.config
     volumes: 
-      - /home/tanderson/models/datasets/mscoco:/data
+      - /home/tanderson/models/datasets/mscoco/raw-data:/data
       - /home/tanderson/models/runs:/runs
       - /home/tanderson/git/deep-frame/configs:/configs
